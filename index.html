@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Architecture | Raju P. Gadiraju</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Minimalist Editorial Theme - Ambient Glow Edition */
+        :root {
+            --bg-body: #FDFCF9; 
+            --bg-beige: #F3EFE7; 
+            --text-main: #111111; 
+            --text-muted: #4A4A4A; 
+            --border-light: #E3DED5;
+            --font-serif: 'Playfair Display', serif;
+            --font-sans: 'Inter', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            background-color: var(--bg-body); 
+            color: var(--text-main); 
+            font-family: var(--font-sans);
+            line-height: 1.8; 
+            -webkit-font-smoothing: antialiased; 
+            font-weight: 400; 
+            overflow-y: scroll;
+            overflow-x: hidden;
+            position: relative;
+            z-index: 0;
+        }
+
+        /* Ambient Glow */
+        body::before, body::after {
+            content: ''; position: fixed; width: 800px; height: 800px; border-radius: 50%;
+            z-index: -1; filter: blur(120px); opacity: 0.7; pointer-events: none;
+            animation: float 20s infinite alternate ease-in-out;
+        }
+        body::before { background: #F3EFE7; top: -200px; left: -200px; }
+        body::after { background: #EAE5DB; bottom: -200px; right: -200px; animation-duration: 25s; animation-direction: alternate-reverse; }
+
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            50% { transform: translate(80px, 40px); }
+            100% { transform: translate(-40px, 80px); }
+        }
+        
+        a { color: var(--text-main); text-decoration: none; transition: all 0.3s ease; }
+        a:hover { opacity: 0.6; }
+
+        h1, h2, h3, .nav-logo { font-family: var(--font-serif); font-weight: 600; }
+
+        /* Navigation */
+        nav {
+            position: fixed; top: 0; width: 100%; padding: 1.5rem 5%;
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(253, 252, 249, 0.85); backdrop-filter: blur(12px);
+            z-index: 1000; border-bottom: 1px solid var(--border-light);
+        }
+
+        .nav-logo { font-size: 1.5rem; color: var(--text-main); cursor: pointer; font-weight: 700; letter-spacing: -0.5px; }
+        .nav-links { display: flex; gap: 3rem; align-items: center; }
+        .nav-links a { color: var(--text-muted); font-size: 0.85rem; font-weight: 500; letter-spacing: 0.5px; padding-bottom: 4px; border-bottom: 1px solid transparent;} 
+        .nav-links a:hover { color: var(--text-main); }
+        .nav-links a.active-nav { color: var(--text-main); border-bottom-color: var(--text-main); }
+
+        /* Hamburger Menu */
+        .menu-toggle { display: none; flex-direction: column; cursor: pointer; gap: 5px; z-index: 1001; }
+        .menu-toggle .bar { width: 25px; height: 2px; background-color: var(--text-main); transition: all 0.3s ease-in-out; }
+
+        /* Layout Structure */
+        section { 
+            display: none; padding: 10rem 5% 6rem; width: 100%; min-height: calc(100vh - 80px); 
+            animation: fadeIn 0.5s ease forwards; background: transparent; 
+        }
+        section.active-tab { display: block; }
+
+        .bg-beige { 
+            background-color: rgba(243, 239, 231, 0.85); backdrop-filter: blur(10px);
+            border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        .section-header { margin-bottom: 5rem; max-width: 700px; position: relative; padding-left: 2rem; }
+        .section-header::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; background-color: var(--text-main); }
+        .section-header h2 { font-size: 3rem; margin-bottom: 1rem; color: var(--text-main); line-height: 1.1; letter-spacing: -1px;}
+        .section-header p { color: var(--text-muted); font-size: 1.15rem; }
+
+        /* Hero */
+        .hero-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 6rem; align-items: center; }
+        .hero-image-wrapper { position: relative; display: flex; justify-content: flex-start; }
+        .hero-image { width: 100%; max-width: 450px; border-radius: 16px; object-fit: cover; aspect-ratio: 4/5; box-shadow: 0 20px 40px rgba(0,0,0,0.06); }
+        .hero-text { padding-right: 2rem; }
+        .hero-tag { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 1.5rem; display: block; }
+        .hero-text h1 { font-size: 4rem; line-height: 1.1; margin-bottom: 2rem; color: var(--text-main); letter-spacing: -1.5px; font-weight: 800;}
+        .hero-text p { font-size: 1.15rem; color: var(--text-muted); margin-bottom: 3rem; }
+        .hero-buttons { display: flex; gap: 1.5rem; }
+        .btn-primary { background: var(--text-main); color: #fff !important; padding: 1.1rem 2.5rem; font-size: 0.95rem; font-weight: 500; letter-spacing: 1px; border-radius: 4px; cursor: pointer; display: inline-block;}
+        .btn-primary:hover { opacity: 0.8; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .btn-secondary { background: transparent; color: var(--text-main); border-bottom: 1px solid var(--text-main); padding: 0.5rem 0; font-size: 0.95rem; font-weight: 500; cursor: pointer;}
+        .btn-secondary:hover { opacity: 0.6; border-bottom-color: transparent; }
+
+        /* Practice Areas / Research Grid */
+        .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+        .service-card { padding: 2.5rem 2rem; background: transparent; border-top: 1px solid var(--border-light); border-radius: 8px; transition: all 0.4s ease; display: block; }
+        .service-card:hover { background: rgba(253, 252, 249, 0.9); transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.03); border-top-color: transparent; }
+        a.service-card:hover h3 { color: var(--text-main); }
+        a.service-card:hover { opacity: 1; } 
+
+        .service-icon { font-size: 2.2rem; margin-bottom: 1.5rem; display: block; filter: grayscale(100%); opacity: 0.8; }
+        .service-card h3 { font-size: 1.4rem; margin-bottom: 1rem; color: var(--text-main); }
+        .service-card p { color: var(--text-muted); font-size: 1rem; }
+
+        /* Skills Pills */
+        .skill-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 1.5rem; }
+        .skill-pill { font-family: var(--font-sans); font-size: 0.8rem; font-weight: 500; color: var(--text-muted); border: 1px solid var(--border-light); padding: 0.35rem 0.85rem; border-radius: 4px; display: inline-block; }
+
+        /* Experience Timeline */
+        .timeline { position: relative; max-width: 1000px; margin: 0 auto; padding: 2rem 0; }
+        .timeline::after { content: ''; position: absolute; width: 1px; background-color: var(--border-light); top: 0; bottom: 0; left: 50%; }
+        .timeline-item { padding: 10px 50px; position: relative; width: 50%; margin-bottom: 5rem; }
+        .left-item { left: 0; }
+        .right-item { left: 50%; }
+        .timeline-item::after { content: ''; position: absolute; width: 16px; height: 16px; right: -8px; top: 15px; background-color: var(--bg-body); border: 2px solid var(--text-main); border-radius: 50%; z-index: 1; transition: transform 0.3s; }
+        .timeline-item:hover::after { transform: scale(1.3); background-color: var(--text-main); }
+        .right-item::after { left: -8px; }
+
+        .timeline-content-block { display: flex; flex-direction: column; transition: transform 0.3s ease; }
+        .timeline-item:hover .timeline-content-block { transform: translateY(-3px); }
+        .left-item .timeline-content-block { align-items: flex-end; }
+        .right-item .timeline-content-block { align-items: flex-start; }
+
+        .timeline-header-wrap { display: flex; align-items: center; gap: 1.25rem; margin-bottom: 1.5rem; width: 100%; }
+        .left-item .timeline-header-wrap { flex-direction: row-reverse; justify-content: flex-start; }
+        .right-item .timeline-header-wrap { flex-direction: row; justify-content: flex-start; }
+        
+        .timeline-logo { width: 56px; height: 56px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border-light); background-color: #ffffff; padding: 8px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+        .timeline-logo-placeholder { display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; color: #a1a1aa; text-transform: uppercase; letter-spacing: 1px; text-align: center; background-color: var(--bg-beige); }
+
+        .timeline-title-group { display: flex; flex-direction: column; justify-content: center; }
+        .left-item .timeline-title-group { align-items: flex-end; text-align: right; }
+        .right-item .timeline-title-group { align-items: flex-start; text-align: left; }
+
+        .timeline-date { font-size: 0.75rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.25rem; }
+        .timeline-role { font-family: var(--font-serif); font-size: 1.6rem; font-weight: 600; color: var(--text-main); margin-bottom: 0.15rem; line-height: 1.2; letter-spacing: -0.5px;}
+        .timeline-company { font-size: 1rem; font-weight: 500; color: var(--text-muted); margin-bottom: 0; }
+        
+        .timeline-details { list-style-type: none; color: var(--text-muted); font-size: 0.95rem; max-width: 420px; }
+        .timeline-details li { margin-bottom: 0.75rem; position: relative; }
+        .left-item .timeline-details li { padding-right: 1.2rem; text-align: right; }
+        .left-item .timeline-details li::after { content: '—'; position: absolute; right: 0; color: var(--border-light); font-weight: bold; }
+        .right-item .timeline-details li { padding-left: 1.2rem; text-align: left; }
+        .right-item .timeline-details li::before { content: '—'; position: absolute; left: 0; color: var(--border-light); font-weight: bold; }
+
+        /* Case Studies */
+        .cs-grid { display: flex; flex-direction: column; gap: 6rem; }
+        .cs-card { padding-left: 0; transition: transform 0.3s ease; }
+        .cs-category { font-size: 0.8rem; font-family: var(--font-sans); font-weight: 600; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 1rem; }
+        .cs-card h3 { font-size: 2.4rem; margin-bottom: 1.5rem; letter-spacing: -0.5px; }
+        .cs-table { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2rem; padding: 1.5rem 2rem; margin-bottom: 2rem; background-color: transparent; border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); transition: all 0.3s ease; }
+        .cs-card:hover .cs-table { background-color: rgba(253, 252, 249, 0.9); box-shadow: 0 10px 30px rgba(0,0,0,0.03); border-color: transparent; border-radius: 8px;}
+        .cs-col strong { display: block; font-family: var(--font-sans); font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.25rem; font-weight: 600;}
+        .cs-col span { font-size: 1.05rem; color: var(--text-main); font-weight: 500;}
+        .cs-card p { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 1.5rem; max-width: 850px; }
+
+        /* Engagement Models */
+        .engagement-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 3rem; }
+        .engagement-card { padding: 3rem 2.5rem; background-color: rgba(253, 252, 249, 0.6); border: 1px solid var(--border-light); border-radius: 8px; transition: all 0.4s ease; }
+        .engagement-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.04); background-color: rgba(253, 252, 249, 0.95); }
+        .step-number { font-family: var(--font-serif); font-size: 3rem; color: var(--border-light); margin-bottom: 1rem; line-height: 1; font-weight: 700; transition: color 0.3s; }
+        .engagement-card:hover .step-number { color: var(--text-main); }
+        .engagement-card h3 { font-size: 1.6rem; margin-bottom: 0.5rem; }
+        .engagement-model { font-family: var(--font-sans); font-size: 0.8rem; color: var(--text-muted); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 1.5rem; display: block; }
+        .engagement-card p { color: var(--text-muted); font-size: 1.05rem; }
+
+        /* Contact Section */
+        .contact-inner { max-width: 800px; margin: 0 auto; text-align: center; }
+        .contact-inner h2 { font-size: 3.5rem; margin-bottom: 1.5rem; letter-spacing: -1px; }
+        .contact-inner p { color: var(--text-muted); font-size: 1.2rem; margin-bottom: 4rem; }
+        .contact-info-grid { display: flex; justify-content: center; flex-wrap: wrap; gap: 5rem; font-size: 1.1rem; font-family: var(--font-sans); }
+        .contact-block { display: flex; flex-direction: column; align-items: center; }
+        .contact-block span { display:block; font-size: 0.8rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.75rem; font-weight: 600;}
+        .contact-block a, .contact-block div { color: var(--text-main); font-weight: 500; font-size: 1.2rem; }
+        .contact-block a:hover { opacity: 0.6; }
+
+        footer { text-align: center; padding: 3rem 5%; color: var(--text-muted); font-size: 0.9rem; border-top: 1px solid var(--border-light); background-color: var(--bg-body); position: relative; z-index: 10; }
+
+        /* Mobile */
+        @media (max-width: 900px) {
+            section { padding-top: 7rem; }
+            .hero-grid { grid-template-columns: 1fr; gap: 4rem; }
+            .hero-image-wrapper { justify-content: center; order: -1; }
+            .hero-text { padding-right: 0; text-align: center; }
+            .hero-text h1 { font-size: 3.2rem; }
+            .hero-buttons { justify-content: center; }
+            
+            .cs-table { grid-template-columns: 1fr; gap: 1rem; padding: 1.5rem 0; border: none; background: transparent !important; box-shadow: none !important; }
+            .contact-info-grid { flex-direction: column; gap: 2.5rem; }
+            
+            .timeline::after { left: 20px; }
+            .timeline-item { width: 100%; padding-left: 60px; padding-right: 0; }
+            .left-item, .right-item { left: 0; }
+            .timeline-item::after { left: 12px; right: auto; }
+            .left-item .timeline-content-block { align-items: flex-start; }
+            .left-item .timeline-header-wrap { flex-direction: row; text-align: left; justify-content: flex-start; }
+            .left-item .timeline-title-group { align-items: flex-start; text-align: left; }
+            .left-item .timeline-details li { padding-right: 0; padding-left: 1.2rem; text-align: left; }
+            .left-item .timeline-details li::after { display: none; }
+            .left-item .timeline-details li::before { content: '—'; position: absolute; left: 0; color: var(--border-light); font-weight: bold; }
+
+            .menu-toggle { display: flex; }
+            .nav-links { position: absolute; top: 100%; left: 0; width: 100%; background: rgba(253, 252, 249, 0.98); flex-direction: column; padding: 2rem 0; border-bottom: 1px solid var(--border-light); box-shadow: 0 10px 20px rgba(0,0,0,0.05); display: none; }
+            .nav-links.is-active { display: flex; }
+            .nav-links a { font-size: 1.1rem; padding: 0.5rem 0;}
+            
+            .menu-toggle.is-active .bar:nth-child(2) { opacity: 0; }
+            .menu-toggle.is-active .bar:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+            .menu-toggle.is-active .bar:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <script src="data.js"></script>
+
+    <nav>
+        <a href="#hero" class="nav-logo" id="nav-logo-name">Raju Gadiraju</a>
+        
+        <div class="menu-toggle" id="mobile-menu">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </div>
+
+        <div class="nav-links" id="nav-links">
+            <a href="#services">Expertise</a>
+            <a href="#skills">Skills</a>
+            <a href="#experience">Experience</a>
+            <a href="#case-studies">Case Studies</a>
+            <a href="#research">Research</a>
+            <a href="#engagements">Engagement</a>
+            <a href="#contact">Contact</a>
+        </div>
+    </nav>
+
+    <section id="hero" class="active-tab">
+        <div class="container hero-grid">
+            <div class="hero-image-wrapper">
+                <img id="hero-image" src="" alt="Professional Headshot" class="hero-image">
+            </div>
+            <div class="hero-text">
+                <span class="hero-tag">About the Architect</span>
+                <h1 id="hero-title"></h1>
+                <p id="hero-bio"></p>
+                <div class="hero-buttons">
+                    <a href="#contact" class="btn-primary">Get in Touch</a>
+                    <a href="#case-studies" class="btn-secondary">Read Case Studies</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="services" class="bg-beige">
+        <div class="container">
+            <div class="section-header">
+                <h2>What I Bring</h2>
+                <p>Deep experience across the full enterprise architecture stack - from initial stakeholder alignment through system design, and multi-cloud AI delivery.</p>
+            </div>
+            <div class="services-grid" id="services-container"></div>
+        </div>
+    </section>
+
+    <section id="skills">
+        <div class="container">
+            <div class="section-header">
+                <h2>Technical Toolkit</h2>
+                <p>A comprehensive inventory of platforms, languages, and frameworks utilized in production environments.</p>
+            </div>
+            <div class="services-grid" id="skills-container"></div>
+        </div>
+    </section>
+
+    <section id="experience" class="bg-beige">
+        <div class="container">
+            <div class="section-header" style="text-align: center; margin: 0 auto 4rem auto; padding-left: 0;">
+                <h2>Professional Experience</h2>
+            </div>
+            <div class="timeline" id="resume-container"></div>
+        </div>
+    </section>
+
+    <section id="case-studies">
+        <div class="container">
+            <div class="section-header">
+                <h2>Case Studies</h2>
+                <p>Architecting systems that scale across Healthcare, Finance, and Enterprise domains.</p>
+            </div>
+            <div class="cs-grid" id="cs-container"></div>
+        </div>
+    </section>
+
+    <section id="research" class="bg-beige">
+        <div class="container">
+            <div class="section-header">
+                <h2>Research & Publications</h2>
+                <p>Academic and industry contributions advancing Edge AI, RAG optimization, and autonomous architectures.</p>
+            </div>
+            <div class="services-grid" id="research-container"></div>
+        </div>
+    </section>
+
+    <section id="engagements">
+        <div class="container">
+            <div class="section-header">
+                <h2>Engagement Model</h2>
+                <p>How I work with enterprise organizations and growing startups.</p>
+            </div>
+            <div class="engagement-grid" id="engagements-container"></div>
+        </div>
+    </section>
+
+    <section id="contact" class="bg-beige">
+        <div class="container contact-inner">
+            <h2 style="font-family: var(--font-serif); font-size: 3.5rem; font-weight: 600; margin-bottom: 1.5rem;">Let's Connect</h2>
+            <p>Available for conversations this week. Whether you're at the idea stage or mid-build, early architecture alignment saves significant time and cost down the road.</p>
+            
+            <div class="contact-info-grid" id="contact-container" style="margin-top: 4rem;"></div>
+            
+            <a id="media-kit-btn" href="" download="Raju_Gadiraju_Media_Kit.pdf" class="btn-primary" style="display: inline-block; margin-top: 4.5rem;">Download Media Kit PDF</a>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Raju P. Gadiraju. Enterprise Architecture.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            const mobileMenu = document.getElementById('mobile-menu');
+            const navLinksContainer = document.getElementById('nav-links');
+
+            mobileMenu.addEventListener('click', () => {
+                mobileMenu.classList.toggle('is-active');
+                navLinksContainer.classList.toggle('is-active');
+            });
+
+            function switchTab(targetId) {
+                document.querySelectorAll('section').forEach(sec => sec.classList.remove('active-tab'));
+                document.querySelectorAll('.nav-links a').forEach(link => link.classList.remove('active-nav'));
+                
+                const targetSec = document.querySelector(targetId);
+                if (targetSec) { targetSec.classList.add('active-tab'); }
+                
+                const activeLink = document.querySelector(`.nav-links a[href="${targetId}"]`);
+                if (activeLink) { activeLink.classList.add('active-nav'); }
+                
+                if (mobileMenu.classList.contains('is-active')) {
+                    mobileMenu.classList.remove('is-active');
+                    navLinksContainer.classList.remove('is-active');
+                }
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            document.querySelectorAll('a[href^="#"]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = this.getAttribute('href');
+                    switchTab(target);
+                });
+            });
+
+            document.getElementById('hero-title').innerHTML = consultingData.hero.title.replace(':', ':<br>');
+            document.getElementById('hero-bio').innerHTML = `<strong>${consultingData.hero.tagline}</strong><br><br>${consultingData.hero.bio}`;
+            document.getElementById('hero-image').src = consultingData.hero.photoSrc;
+
+            const contactContainer = document.getElementById('contact-container');
+            contactContainer.innerHTML = `
+                <div class="contact-block">
+                    <span>Email</span>
+                    <a href="mailto:${consultingData.contact.email}">${consultingData.contact.email}</a>
+                </div>
+                <div class="contact-block">
+                    <span>Phone</span>
+                    <div>${consultingData.contact.phone}</div>
+                </div>
+                <div class="contact-block">
+                    <span>LinkedIn</span>
+                    <a href="${consultingData.contact.linkedinUrl}" target="_blank">${consultingData.contact.linkedinDisplay}</a>
+                </div>
+                <div class="contact-block">
+                    <span>Location</span>
+                    <div>${consultingData.contact.location}</div>
+                </div>
+            `;
+            
+            // Set native HTML link for file download
+            document.getElementById('media-kit-btn').href = consultingData.contact.mediaKitLink;
+
+            const servicesContainer = document.getElementById('services-container');
+            consultingData.services.forEach(service => {
+                servicesContainer.innerHTML += `
+                    <div class="service-card">
+                        <span class="service-icon">${service.icon}</span>
+                        <h3>${service.title}</h3>
+                        <p>${service.description}</p>
+                    </div>
+                `;
+            });
+
+            const skillsContainer = document.getElementById('skills-container');
+            if (consultingData.skills && consultingData.skills.length > 0) {
+                consultingData.skills.forEach(skillGrp => {
+                    let pillsHtml = skillGrp.items.map(item => `<span class="skill-pill">${item}</span>`).join('');
+                    skillsContainer.innerHTML += `
+                        <div class="service-card">
+                            <h3>${skillGrp.cat}</h3>
+                            <div class="skill-pills">${pillsHtml}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            const resumeContainer = document.getElementById('resume-container');
+            if (consultingData.resume && consultingData.resume.length > 0) {
+                consultingData.resume.forEach((job, index) => {
+                    const sideClass = (index % 2 === 0) ? 'left-item' : 'right-item';
+                    let detailsHTML = job.details.map(detail => `<li>${detail}</li>`).join('');
+                    
+                    const logoHTML = (job.logo && job.logo !== "placeholder-logo.png") 
+                        ? `<img src="${job.logo}" alt="${job.company} logo" class="timeline-logo">` 
+                        : `<div class="timeline-logo timeline-logo-placeholder">LOGO</div>`;
+                    
+                    resumeContainer.innerHTML += `
+                        <div class="timeline-item ${sideClass}">
+                            <div class="timeline-content-block">
+                                <div class="timeline-header-wrap">
+                                    ${logoHTML}
+                                    <div class="timeline-title-group">
+                                        <div class="timeline-date">${job.date}</div>
+                                        <div class="timeline-role">${job.role}</div>
+                                        <div class="timeline-company">${job.company}</div>
+                                    </div>
+                                </div>
+                                <ul class="timeline-details">${detailsHTML}</ul>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            const csContainer = document.getElementById('cs-container');
+            consultingData.caseStudies.forEach(cs => {
+                csContainer.innerHTML += `
+                    <div class="cs-card">
+                        <div class="cs-category">${cs.category}</div>
+                        <h3>${cs.title}</h3>
+                        <div class="cs-table">
+                            <div class="cs-col"><strong>Context</strong><span>${cs.context}</span></div>
+                            <div class="cs-col"><strong>Scale</strong><span>${cs.scale}</span></div>
+                            <div class="cs-col"><strong>Duration</strong><span>${cs.duration}</span></div>
+                        </div>
+                        <p>${cs.problem}</p>
+                        <p style="color: var(--text-main); font-weight: 600; margin-top: 1rem;"><strong>Outcome:</strong> ${cs.solution}</p>
+                    </div>
+                `;
+            });
+            
+            const researchContainer = document.getElementById('research-container');
+            if (consultingData.research && consultingData.research.length > 0) {
+                consultingData.research.forEach(item => {
+                    const isLink = !!item.doi;
+                    const tag = isLink ? 'a' : 'div';
+                    const hrefAttr = isLink ? `href="https://doi.org/${item.doi}" target="_blank"` : '';
+                    
+                    const dateHtml = item.date ? `<span style="font-family: var(--font-sans); font-size: 0.75rem; font-weight: 500; color: var(--text-muted); float: right;">${item.date}</span>` : '';
+                    const linkPromptHtml = isLink ? `<span style="display: inline-block; margin-top: 1rem; font-size: 0.85rem; font-weight: 600; color: var(--text-main); border-bottom: 1px solid var(--text-main);">Read Paper &rarr;</span>` : '';
+
+                    researchContainer.innerHTML += `
+                        <${tag} ${hrefAttr} class="service-card" style="text-decoration: none;">
+                            ${dateHtml}
+                            <span style="font-family: var(--font-sans); font-size: 0.8rem; font-weight: 600; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.75rem; display: block;">${item.venue}</span>
+                            <h3 style="margin-bottom: 1rem; font-size: 1.4rem;">${item.title}</h3>
+                            <p>${item.description}</p>
+                            ${linkPromptHtml}
+                        </${tag}>
+                    `;
+                });
+            }
+
+            const engagementsContainer = document.getElementById('engagements-container');
+            consultingData.engagements.forEach(engagement => {
+                engagementsContainer.innerHTML += `
+                    <div class="engagement-card">
+                        <div class="step-number">${engagement.step}</div>
+                        <h3>${engagement.type}</h3>
+                        <span class="engagement-model">${engagement.model}</span>
+                        <p>${engagement.details}</p>
+                    </div>
+                `;
+            });
+        });
+    </script>
+</body>
+</html>
